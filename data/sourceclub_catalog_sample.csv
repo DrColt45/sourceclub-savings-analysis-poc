@@ -1,0 +1,13 @@
+sourceclub_product_id,best_supplier,best_supplier_product_sku,best_supplier_product_name,manufacturer,manufacturer_item_number,uom,pack_qty,best_price,product_category,clinical_sensitivity,notes
+SC-GLV-001,Safco,SAF-GLV300M,Cranberry Nitrile Exam Gloves Medium Blue,Cranberry,CR-300M,box,300,18.90,Gloves,low,Exact manufacturer item sample
+SC-STR-002,Darby,DAR-SW2424,Halyard Sterilization Wrap 24 x 24 Blue,Halyard,H1000,case,500,118.00,Sterilization,medium,Same product lower contract price
+SC-BIT-003,Net32,N32-PK-S450S,Parkell Blu-Mousse Bite Registration Cartridges,Parkell,S450S,pack,2,28.00,Impression Materials,medium,Clinically sensitive but exact manufacturer SKU
+SC-BUR-004,Henry Schein,HS-SSW557100,SS White FG 557 Carbide Burs,SS White,557FG100,pack,100,84.00,Burs,medium,Exact bur family and pack
+SC-XRY-005,Safco,SAF-DEX-ENV2,Dexis Compatible Phosphor Plate Envelopes Size 2,Dexis,,box,300,42.00,Imaging,low,Description match with missing manufacturer item number
+SC-CAM-006,SourceClub Direct,SCD-CAM-500,Universal Intraoral Camera Sleeves,TIDI,,box,500,31.00,Barriers,low,Comparable sleeve for common intraoral cameras
+SC-ANE-007,Patterson,PAT-SEP27S,Septoject Anesthetic Needles 27G Short,Septodont,01N1300,box,100,19.00,Anesthetic,high,Exact item but sample price is higher than customer price
+SC-COL-008,SourceClub Direct,SCD-COLL-1020,Absorbable Collagen Plugs 10 x 20 mm,SourceClub House Brand,,box,10,78.00,Surgical,high,House-brand alternative; review before counting confirmed savings
+SC-CAV-009,Darby,DAR-CAVI-GAL,CaviCide Surface Disinfectant Gallon,Metrex,13-1000,each,1,26.50,Infection Control,medium,Exact manufacturer item sample
+SC-COT-010,SourceClub Direct,SCD-COT2-1000,Cotton Rolls Number 2 Non-Sterile,SourceClub House Brand,,case,1000,13.00,Consumables,low,Pack differs from some distributor exports
+SC-MAT-011,Benco,BEN-MAT-UNIV,Universal Matrix Bands Assorted,Premier,,pack,50,22.00,Restorative,medium,Alternative candidate only
+SC-NEE-012,Safco,SAF-IRR-30,Endodontic Irrigation Needles 30G Side Vent,Cerkamed,,pack,100,18.50,Endodontics,high,Not a match for anesthetic needles
