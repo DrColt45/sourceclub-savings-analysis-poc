@@ -32,6 +32,23 @@ def summarize_results(results: pd.DataFrame) -> Dict[str, float | int]:
     }
 
 
+def summarize_coverage(results: pd.DataFrame) -> Dict[str, float | int]:
+    rows_analyzed = int(len(results))
+    rows_with_candidate = int(results["sourceclub_product_id"].astype("string").fillna("").ne("").sum())
+    rows_auto_confirmed = int(results["match_status"].eq("AUTO_CONFIRMED").sum())
+    rows_needing_review = int(results["match_status"].isin(REVIEW_STATUSES).sum())
+    rows_no_match_higher = int(results["match_status"].isin(NO_MATCH_STATUSES).sum())
+
+    return {
+        "rows_analyzed": rows_analyzed,
+        "rows_with_any_candidate_match": rows_with_candidate,
+        "rows_auto_confirmed": rows_auto_confirmed,
+        "rows_needing_review": rows_needing_review,
+        "rows_no_match_higher_price": rows_no_match_higher,
+        "catalog_coverage_percent": rows_with_candidate / rows_analyzed if rows_analyzed else 0,
+    }
+
+
 def summary_frame(summary: Dict[str, float | int]) -> pd.DataFrame:
     labels = {
         "total_old_spend_analyzed": "Total old spend analyzed",

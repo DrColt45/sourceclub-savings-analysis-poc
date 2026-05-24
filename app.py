@@ -18,7 +18,7 @@ from core.normalization import (
     normalize_catalog,
     normalize_purchase_history,
 )
-from core.reporting import make_excel_workbook, split_result_tables, summarize_results
+from core.reporting import make_excel_workbook, split_result_tables, summarize_coverage, summarize_results
 
 
 APP_DIR = Path(__file__).parent
@@ -61,6 +61,25 @@ def compact_label(value: object, max_length: int = 72) -> str:
 
 
 st.title("SourceClub Savings Analysis POC")
+st.caption(
+    "Upload a supplier purchase analysis, match it against SourceClub's best-pricing catalog, "
+    "review uncertain items, and export a savings-ready workbook."
+)
+st.info(
+    "This public POC uses synthetic demo data. For best demonstration results, leave the sample purchase "
+    "history and built-in sample catalog enabled, then click Run Savings Analysis."
+)
+
+workflow_columns = st.columns(4)
+workflow_steps = [
+    ("1", "Upload purchase history"),
+    ("2", "Match against catalog"),
+    ("3", "Review exceptions"),
+    ("4", "Export savings workbook"),
+]
+for column, (number, label) in zip(workflow_columns, workflow_steps):
+    with column:
+        st.markdown(f"**{number}. {label}**")
 
 with st.sidebar:
     st.header("Inputs")
@@ -163,6 +182,7 @@ if results is None:
     st.stop()
 
 summary = summarize_results(results)
+coverage = summarize_coverage(results)
 
 st.subheader("3. Summary")
 metric_columns = st.columns(7)
@@ -175,6 +195,50 @@ metric_columns[5].metric("Rows needing review", f"{summary['rows_needing_review'
 metric_columns[6].metric("No match / higher price", f"{summary['no_match_higher_price_rows']:,}")
 
 st.caption(f"Matched spend: {money(summary['matched_spend'])}")
+
+st.subheader("Coverage Diagnostic")
+coverage_columns = st.columns(6)
+coverage_columns[0].metric("Rows analyzed", f"{coverage['rows_analyzed']:,}")
+coverage_columns[1].metric("Rows with candidate", f"{coverage['rows_with_any_candidate_match']:,}")
+coverage_columns[2].metric("Rows auto-confirmed", f"{coverage['rows_auto_confirmed']:,}")
+coverage_columns[3].metric("Rows needing review", f"{coverage['rows_needing_review']:,}")
+coverage_columns[4].metric("No match / higher price", f"{coverage['rows_no_match_higher_price']:,}")
+coverage_columns[5].metric("Catalog coverage", pct(coverage["catalog_coverage_percent"]))
+
+if coverage["catalog_coverage_percent"] < 0.65:
+    st.warning(
+        "Low catalog coverage: many uploaded purchase-history items do not exist in the current demo catalog. "
+        "Upload a matching SourceClub catalog or use the built-in demo files to see the full workflow."
+    )
+
+status_counts = results["match_status"].value_counts().to_dict()
+status_order = [
+    "AUTO_CONFIRMED",
+    "REVIEW_SUBSTITUTE",
+    "REVIEW_ALTERNATIVE",
+    "UOM_REVIEW",
+    "HIGHER_PRICE",
+    "NO_MATCH",
+]
+status_colors = {
+    "AUTO_CONFIRMED": "#DDF6E8",
+    "REVIEW_SUBSTITUTE": "#FFF0C2",
+    "REVIEW_ALTERNATIVE": "#FFE2C7",
+    "UOM_REVIEW": "#DCEBFF",
+    "HIGHER_PRICE": "#FAD7D7",
+    "NO_MATCH": "#E7EAF0",
+}
+chips = []
+for status in status_order:
+    count = status_counts.get(status, 0)
+    if count:
+        chips.append(
+            f"<span style='display:inline-block;margin:0 8px 8px 0;padding:5px 10px;"
+            f"border-radius:16px;background:{status_colors[status]};font-size:0.85rem;"
+            f"font-weight:600;color:#1F2933;'>{status}: {count}</span>"
+        )
+if chips:
+    st.markdown("".join(chips), unsafe_allow_html=True)
 
 tables = split_result_tables(results)
 workbook = make_excel_workbook(results, summary)

@@ -1,13 +1,42 @@
 sourceclub_product_id,best_supplier,best_supplier_product_sku,best_supplier_product_name,manufacturer,manufacturer_item_number,uom,pack_qty,best_price,product_category,clinical_sensitivity,notes
 SC-GLV-001,Safco,SAF-GLV300M,Cranberry Nitrile Exam Gloves Medium Blue,Cranberry,CR-300M,box,300,18.90,Gloves,low,Exact manufacturer item sample
+SC-GLV-002,SourceClub Direct,SCD-GLV200S,Nitrile Exam Gloves Small Blue Powder Free,SourceClub House Brand,,box,200,12.80,Gloves,low,House-brand glove alternative for review workflows
+SC-GLV-003,Darby,DAR-GLV-LAT100,Latex Exam Gloves Medium Powder Free,SafeTouch,ST-LAT-M,box,100,9.90,Gloves,low,Synthetic sample glove item
+SC-GLV-004,Net32,N32-VNYL-L,Vinyl Exam Gloves Large Clear Powder Free,ValueTouch,VT-VIN-L,box,100,6.75,Gloves,low,Synthetic sample glove item
 SC-STR-002,Darby,DAR-SW2424,Halyard Sterilization Wrap 24 x 24 Blue,Halyard,H1000,case,500,118.00,Sterilization,medium,Same product lower contract price
+SC-STR-013,Henry Schein,HS-SW1818,Halyard Sterilization Wrap 18 x 18 Blue,Halyard,H800,case,500,94.00,Sterilization,medium,Synthetic sterilization wrap size variant
+SC-STR-014,Safco,SAF-IND24,Indicator Tape Steam Sterilization 1 Inch,Henry Schein Brand,HS-IND-1,roll,1,5.80,Sterilization,low,Synthetic indicator tape item
+SC-POU-015,Darby,DAR-POUCH357,Self Seal Sterilization Pouches 3.5 x 7,SafeSeal,SS-357,box,200,10.90,Pouches,low,Synthetic pouch item
+SC-POU-016,SourceClub Direct,SCD-POUCH52510,Self Seal Sterilization Pouches 5.25 x 10,SourceClub House Brand,,box,200,14.60,Pouches,low,Synthetic pouch item
 SC-BIT-003,Net32,N32-PK-S450S,Parkell Blu-Mousse Bite Registration Cartridges,Parkell,S450S,pack,2,28.00,Impression Materials,medium,Clinically sensitive but exact manufacturer SKU
+SC-IMP-017,Safco,SAF-ALG-1LB,Alginate Impression Material Fast Set 1 lb,Keystone,K-ALG-FS,bag,1,11.40,Impression Materials,medium,Synthetic impression material item
+SC-IMP-018,Darby,DAR-VPS-HB,VPS Heavy Body Impression Material Cartridges,Premier,PR-VPS-HB,pack,2,31.50,Impression Materials,medium,Synthetic impression material item
+SC-IMP-019,Net32,N32-MIXTIPS-Y,Yellow Mixing Tips for Impression Material,Defend,DEF-YMT,bag,50,9.25,Dispensing Tips,low,Synthetic dispensing tip item
+SC-TIP-020,SourceClub Direct,SCD-BLUETIP-100,Blue Intraoral Mixing Tips 100 Count,SourceClub House Brand,,bag,100,15.75,Dispensing Tips,low,Synthetic dispensing tip item
 SC-BUR-004,Henry Schein,HS-SSW557100,SS White FG 557 Carbide Burs,SS White,557FG100,pack,100,84.00,Burs,medium,Exact bur family and pack
+SC-BUR-021,Darby,DAR-SSW33010,SS White FG 330 Carbide Burs 10 Pack,SS White,330FG10,pack,10,14.50,Burs,medium,Synthetic bur item
+SC-BUR-022,Safco,SAF-DIA-MED,Diamond Burs Medium Round Assorted,Microcopy,MC-DIA-MED,pack,25,36.00,Burs,medium,Synthetic diamond bur item
+SC-BUR-023,Net32,N32-SURG-702,Surgical Carbide Burs 702L,Prima Dental,PD-702L,pack,10,22.00,Burs,high,Surgical bur review item
 SC-XRY-005,Safco,SAF-DEX-ENV2,Dexis Compatible Phosphor Plate Envelopes Size 2,Dexis,,box,300,42.00,Imaging,low,Description match with missing manufacturer item number
+SC-BAR-024,Darby,DAR-BARRIER-1200,Universal Light Handle Barrier Sleeves,SafeShield,SS-LHB-1200,box,1200,39.00,Barriers,low,Synthetic barrier sleeve item
 SC-CAM-006,SourceClub Direct,SCD-CAM-500,Universal Intraoral Camera Sleeves,TIDI,,box,500,31.00,Barriers,low,Comparable sleeve for common intraoral cameras
+SC-BAR-025,Safco,SAF-TRAY-500,Tray Sleeves 10.5 x 14 Inch Clear,Defend,DEF-TS-1014,box,500,25.00,Barriers,low,Synthetic tray sleeve item
+SC-BAR-026,Net32,N32-AW-500,Air Water Syringe Sleeves Clear,Plasdent,PL-AW-500,box,500,13.90,Barriers,low,Synthetic air water sleeve item
 SC-ANE-007,Patterson,PAT-SEP27S,Septoject Anesthetic Needles 27G Short,Septodont,01N1300,box,100,19.00,Anesthetic,high,Exact item but sample price is higher than customer price
+SC-ANE-027,Darby,DAR-SEP30S,Septoject Anesthetic Needles 30G Short,Septodont,01N1350,box,100,18.50,Anesthetic,high,Synthetic anesthetic needle item
+SC-ANE-028,Safco,SAF-CARP-LIDO,Lidocaine HCl 2 Percent with Epinephrine Cartridges,Cook-Waite,CW-LIDO2,box,50,39.00,Anesthetics,high,Synthetic anesthetic cartridge item
+SC-NEE-012,Safco,SAF-IRR-30,Endodontic Irrigation Needles 30G Side Vent,Cerkamed,,pack,100,18.50,Needles,high,Not a match for anesthetic needles
+SC-NEE-029,SourceClub Direct,SCD-DISP-100,Disposable Applicator Needles 25G Blunt Tip,SourceClub House Brand,,pack,100,8.75,Needles,medium,Synthetic dispensing needle item
 SC-COL-008,SourceClub Direct,SCD-COLL-1020,Absorbable Collagen Plugs 10 x 20 mm,SourceClub House Brand,,box,10,78.00,Surgical,high,House-brand alternative; review before counting confirmed savings
 SC-CAV-009,Darby,DAR-CAVI-GAL,CaviCide Surface Disinfectant Gallon,Metrex,13-1000,each,1,26.50,Infection Control,medium,Exact manufacturer item sample
+SC-INF-030,Safco,SAF-OPT-GAL,Opti-Cide Surface Disinfectant Gallon,Micro-Scientific,MS-OPT-GAL,each,1,24.80,Infection Control,medium,Synthetic disinfectant item
+SC-WIP-031,Darby,DAR-CAVW160,CaviWipes Surface Disinfecting Wipes 160 Count,Metrex,13-1150,canister,160,11.25,Wipes,medium,Synthetic wipe item
+SC-WIP-032,SourceClub Direct,SCD-WIPE-800,Surface Disinfecting Wipes Refill Pack,SourceClub House Brand,,pack,800,42.00,Wipes,medium,Synthetic wipe item
 SC-COT-010,SourceClub Direct,SCD-COT2-1000,Cotton Rolls Number 2 Non-Sterile,SourceClub House Brand,,case,1000,13.00,Consumables,low,Pack differs from some distributor exports
-SC-MAT-011,Benco,BEN-MAT-UNIV,Universal Matrix Bands Assorted,Premier,,pack,50,22.00,Restorative,medium,Alternative candidate only
-SC-NEE-012,Safco,SAF-IRR-30,Endodontic Irrigation Needles 30G Side Vent,Cerkamed,,pack,100,18.50,Endodontics,high,Not a match for anesthetic needles
+SC-RES-033,Benco,BEN-FLOW-A2,Flowable Composite A2 Syringe,Beautifil,BF-FLOW-A2,pack,2,41.00,Restorative Materials,high,Synthetic restorative item
+SC-RES-034,Darby,DAR-COMP-A2,Universal Composite A2 Capsules,Filtek,FTK-A2-CAP,pack,20,86.00,Restorative Materials,high,Synthetic restorative item
+SC-RES-035,Safco,SAF-ETCH-4,Phosphoric Acid Etch Gel Syringes,UltraEtch,UE-ETCH-4,pack,4,15.50,Restorative Materials,medium,Synthetic etch item
+SC-MAT-011,Benco,BEN-MAT-UNIV,Universal Matrix Bands Assorted,Premier,,pack,50,22.00,Restorative Materials,medium,Alternative candidate only
+SC-RES-036,Net32,N32-WEDGE-ASST,Wooden Wedges Assorted,Premier,PR-WEDGE,box,500,17.00,Restorative Materials,low,Synthetic wedge item
+SC-SUC-037,Safco,SAF-HVE-1000,HVE Tips White Vented,SafeBasics,SB-HVE,bag,1000,28.00,Evacuation,low,Synthetic evacuation item
+SC-SUC-038,Darby,DAR-SALIVA-1000,Saliva Ejectors Clear Blue Tip,Defend,DEF-SE,bag,1000,22.50,Evacuation,low,Synthetic evacuation item

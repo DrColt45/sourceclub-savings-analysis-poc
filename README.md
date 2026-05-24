@@ -4,10 +4,16 @@ This is a Streamlit prototype for SourceClub Assignment 1: Savings Analysis Auto
 
 The app lets a user upload a supplier purchase-analysis CSV/XLSX, maps the input columns into a standard SourceClub schema, compares the rows against a built-in demo SourceClub catalog, flags uncertain matches for review, and exports a sales-ready Excel workbook.
 
+## Demo Mode
+
+Demo Mode is designed to show the intended workflow end to end. For the clearest demonstration, leave the sample purchase history and built-in sample catalog enabled, then click **Run Savings Analysis**.
+
+Uploaded files may show low savings or many no-match rows if their items do not overlap with the synthetic demo catalog. In that case, the app shows a catalog coverage warning so the result reads as limited demo coverage rather than a system failure.
+
 ## What The App Does
 
 - Uploads supplier purchase-history files.
-- Uses `data/sourceclub_catalog_sample.csv` as the built-in demo catalog.
+- Uses `data/sourceclub_catalog_sample.csv` as the built-in synthetic demo catalog.
 - Optionally accepts a replacement catalog upload for testing.
 - Auto-detects purchase-history columns and lets the user edit the mapping.
 - Runs deterministic and fuzzy product matching.
@@ -74,7 +80,9 @@ All included CSV data is synthetic demo data. It does not contain real dental-of
 - Matching is intentionally conservative: uncertain substitutes, alternatives, and UOM issues are treated as review savings, not confirmed savings.
 - Pack-size normalization is a prototype heuristic and should be expanded with real supplier UOM rules before production use.
 - Uploaded files are processed in the Streamlit session only; this prototype does not persist uploaded data or reviewer decisions.
-- The built-in catalog is a small synthetic sample and is not a production SourceClub pricing catalog.
+- Uploaded purchase histories can produce low savings if they do not overlap with the demo catalog.
+- The built-in catalog is a synthetic sample and is not a production SourceClub pricing catalog.
+- In production, SourceClub would connect this app to its real secured pricing catalog and a confirmed match library.
 
 ## Recommended Next Work
 
