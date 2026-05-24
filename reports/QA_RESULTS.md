@@ -18,6 +18,10 @@ Local Streamlit HTTP verification is also part of the final validation pass:
 python -m streamlit run app.py
 ```
 
+The final UI polish pass also confirmed the local app returned HTTP 200 after launch on port 8506.
+
+The generated workbook was inspected and confirmed to include Excel-safe sheets: Summary, Savings Analysis, Review Queue, No Match Higher Price, and Match Library Updates. The Summary sheet includes app metadata, generated timestamp, and the synthetic-data warning.
+
 ## Demo Metrics
 
 | Demo scenario | Rows analyzed | Coverage % | Confirmed savings | Review savings | Auto-confirmed | Review rows | No match/higher price |

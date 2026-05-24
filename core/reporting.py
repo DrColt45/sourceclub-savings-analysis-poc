@@ -5,6 +5,7 @@ from io import BytesIO
 from typing import Dict, Mapping
 
 import pandas as pd
+from openpyxl.styles import Alignment, Font, PatternFill
 
 
 REVIEW_STATUSES = {"REVIEW_SUBSTITUTE", "REVIEW_ALTERNATIVE", "UOM_REVIEW"}
@@ -73,23 +74,23 @@ def summary_frame(
         "rows_needing_review": "Rows needing review",
         "no_match_higher_price_rows": "No-match / higher-price rows",
     }
-    rows = [{"metric": labels.get(key, key), "value": value} for key, value in summary.items()]
+    rows = [{"Summary item": labels.get(key, key), "Value": value} for key, value in summary.items()]
 
     if coverage:
         rows.extend(
             [
-                {"metric": "Rows analyzed", "value": coverage["rows_analyzed"]},
-                {"metric": "Rows with candidate match", "value": coverage["rows_with_any_candidate_match"]},
-                {"metric": "Rows auto-confirmed", "value": coverage["rows_auto_confirmed"]},
-                {"metric": "Rows needing review", "value": coverage["rows_needing_review"]},
-                {"metric": "No-match/higher-price rows", "value": coverage["rows_no_match_higher_price"]},
-                {"metric": "Catalog coverage %", "value": coverage["catalog_coverage_percent"]},
-                {"metric": "Coverage label", "value": coverage_label(float(coverage["catalog_coverage_percent"]))},
+                {"Summary item": "Rows analyzed", "Value": coverage["rows_analyzed"]},
+                {"Summary item": "Rows with candidate match", "Value": coverage["rows_with_any_candidate_match"]},
+                {"Summary item": "Rows auto-confirmed", "Value": coverage["rows_auto_confirmed"]},
+                {"Summary item": "Rows needing review", "Value": coverage["rows_needing_review"]},
+                {"Summary item": "No-match/higher-price rows", "Value": coverage["rows_no_match_higher_price"]},
+                {"Summary item": "Catalog coverage %", "Value": coverage["catalog_coverage_percent"]},
+                {"Summary item": "Coverage label", "Value": coverage_label(float(coverage["catalog_coverage_percent"]))},
             ]
         )
 
     if metadata:
-        rows.extend([{"metric": key, "value": value} for key, value in metadata.items()])
+        rows.extend([{"Summary item": key, "Value": value} for key, value in metadata.items()])
 
     return pd.DataFrame(rows)
 
@@ -133,9 +134,13 @@ def make_excel_workbook(
 ) -> bytes:
     tables = split_result_tables(results)
     workbook_metadata = {
-        "demo file used": "",
-        "catalog used": "",
-        "generated timestamp": datetime.now().isoformat(timespec="seconds"),
+        "Demo mode": "",
+        "Source file name": "",
+        "Catalog source": "",
+        "Generated timestamp": datetime.now().isoformat(timespec="seconds"),
+        "Synthetic data warning": (
+            "Synthetic demo data only. Not real customer, PHI, proprietary supplier, or SourceClub pricing data."
+        ),
     }
     if metadata:
         workbook_metadata.update(metadata)
@@ -173,11 +178,32 @@ def make_excel_workbook(
         tables["no_match_higher_price"].to_excel(writer, index=False, sheet_name="No Match Higher Price")
         tables["match_library_updates"].to_excel(writer, index=False, sheet_name="Match Library Updates")
 
+        header_fill = PatternFill("solid", fgColor="E7F0ED")
+        header_font = Font(bold=True, color="1F2933")
+        summary_label_font = Font(bold=True, color="1F2933")
+
         for sheet in writer.book.worksheets:
             sheet.freeze_panes = "A2"
+            for header_cell in sheet[1]:
+                header_cell.fill = header_fill
+                header_cell.font = header_font
+                header_cell.alignment = Alignment(vertical="center")
             for column_cells in sheet.columns:
                 header = str(column_cells[0].value or "")
                 width = min(max(len(header) + 2, 12), 42)
                 sheet.column_dimensions[column_cells[0].column_letter].width = width
+
+        summary_sheet = writer.book["Summary"]
+        for row in summary_sheet.iter_rows(min_row=2, max_col=2):
+            row[0].font = summary_label_font
+            row[0].alignment = Alignment(vertical="top")
+            row[1].alignment = Alignment(vertical="top", wrap_text=True)
+            label = str(row[0].value or "")
+            if "%" in label and isinstance(row[1].value, (float, int)):
+                row[1].number_format = "0.0%"
+            elif "savings" in label.lower() or "spend" in label.lower():
+                row[1].number_format = "$#,##0.00"
+        summary_sheet.column_dimensions["A"].width = 34
+        summary_sheet.column_dimensions["B"].width = 72
 
     return output.getvalue()

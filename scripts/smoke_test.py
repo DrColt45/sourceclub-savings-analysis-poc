@@ -33,7 +33,11 @@ def main() -> None:
         results,
         summary,
         coverage=coverage,
-        metadata={"demo file used": "sample_purchase_history.csv", "catalog used": "sourceclub_catalog_sample.csv"},
+        metadata={
+            "Demo mode": "Built-in Generic Demo",
+            "Source file name": "sample_purchase_history.csv",
+            "Catalog source": "sourceclub_catalog_sample.csv",
+        },
     )
 
     output_path = APP_DIR / "scripts" / "smoke_output.xlsx"

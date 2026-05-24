@@ -31,6 +31,13 @@ Uploaded real-world files may show low savings or many no-match rows if their it
 - Generates human/AI review prompts that can be pasted into ChatGPT or Claude.
 - Exports `SourceClub_Savings_Analysis_Output.xlsx`.
 
+## Four-Step Workflow
+
+1. Select or upload a supplier purchase history.
+2. Match rows against the built-in demo SourceClub catalog or an uploaded replacement catalog.
+3. Review exceptions such as alternatives, substitutes, UOM issues, higher-price rows, and no-match rows.
+4. Export a savings-ready workbook with summary, analysis, review queue, no-match/higher-price rows, and match-library candidates.
+
 ## Run Locally
 
 On Windows, double-click:
@@ -93,6 +100,7 @@ All included CSV data is synthetic demo data. It does not contain real dental-of
 - The prototype works offline and does not require external AI APIs.
 - `rapidfuzz` is used for fuzzy matching when installed. The app has a standard-library similarity fallback.
 - Matching is intentionally conservative: uncertain substitutes, alternatives, and UOM issues are treated as review savings, not confirmed savings.
+- Higher-price rows and no-match rows are excluded from confirmed savings.
 - Pack-size normalization is a prototype heuristic and should be expanded with real supplier UOM rules before production use.
 - Uploaded files are processed in the Streamlit session only; this prototype does not persist uploaded data or reviewer decisions.
 - Uploaded purchase histories can produce low savings if they do not overlap with the demo catalog.

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
@@ -38,6 +39,51 @@ DEMO_PURCHASE_FILES = {
 
 st.set_page_config(page_title="SourceClub Savings Analysis POC", layout="wide")
 
+st.markdown(
+    """
+    <style>
+    .workflow-card {
+        border: 1px solid #DDE5E8;
+        border-radius: 8px;
+        padding: 0.75rem 0.85rem;
+        background: #F8FBFA;
+        min-height: 82px;
+    }
+    .workflow-card .step-icon {
+        font-size: 1.15rem;
+        margin-bottom: 0.25rem;
+    }
+    .workflow-card .step-title {
+        font-weight: 700;
+        color: #1F2933;
+        margin-bottom: 0.15rem;
+    }
+    .workflow-card .step-note {
+        color: #52616B;
+        font-size: 0.86rem;
+        line-height: 1.25rem;
+    }
+    .status-chip {
+        display: inline-block;
+        margin: 0 8px 8px 0;
+        padding: 5px 10px;
+        border-radius: 16px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: #1F2933;
+        border: 1px solid rgba(31, 41, 51, 0.08);
+    }
+    .status-legend {
+        border-top: 1px solid #E5ECEF;
+        border-bottom: 1px solid #E5ECEF;
+        padding: 0.65rem 0 0.2rem 0;
+        margin: 0.25rem 0 0.85rem 0;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 
 def read_uploaded_table(uploaded_file) -> pd.DataFrame:
     name = uploaded_file.name.lower()
@@ -70,10 +116,11 @@ def compact_label(value: object, max_length: int = 72) -> str:
 
 
 st.title("SourceClub Savings Analysis POC")
-st.caption(
-    "Upload a supplier purchase analysis, match it against SourceClub's best-pricing catalog, "
-    "review uncertain items, and export a savings-ready workbook."
+st.markdown(
+    "Upload a supplier purchase analysis, match it against a best-pricing catalog, "
+    "review exceptions, and export a savings-ready workbook."
 )
+st.caption("Public proof-of-concept using synthetic demo data only.")
 st.info(
     "This public POC uses synthetic demo data. For the strongest demo, choose Benco Family Dentistry Demo "
     "or Henry Schein Smile Center Demo, keep the built-in catalog enabled, and click Run Savings Analysis."
@@ -85,17 +132,30 @@ st.caption(
 
 workflow_columns = st.columns(4)
 workflow_steps = [
-    ("1", "Select or upload purchase history"),
-    ("2", "Match against catalog"),
-    ("3", "Review exceptions"),
-    ("4", "Export savings workbook"),
+    ("📄", "Upload purchase history", "Select a demo file or upload a supplier export."),
+    ("🔎", "Match against catalog", "Compare items to synthetic best-pricing rows."),
+    ("⚠️", "Review exceptions", "Separate substitutes, alternatives, and UOM issues."),
+    ("📊", "Export savings workbook", "Download a workbook for sales review."),
 ]
-for column, (number, label) in zip(workflow_columns, workflow_steps):
+for column, (icon, label, note) in zip(workflow_columns, workflow_steps):
     with column:
-        st.markdown(f"**{number}. {label}**")
+        st.markdown(
+            f"""
+            <div class="workflow-card">
+                <div class="step-icon">{icon}</div>
+                <div class="step-title">{label}</div>
+                <div class="step-note">{note}</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
 with st.sidebar:
     st.header("Demo Mode")
+    st.caption(
+        "For the strongest demo, choose Benco Family Dentistry or Henry Schein Smile Center, "
+        "keep the built-in catalog enabled, and click Run Savings Analysis."
+    )
     demo_mode = st.radio(
         "Choose purchase history",
         [
@@ -112,20 +172,21 @@ with st.sidebar:
         purchase_upload = st.file_uploader("Upload purchase history", type=["csv", "xlsx", "xls"])
 
     with st.expander("Download demo files", expanded=False):
+        st.caption("Synthetic purchase histories and catalog for demo/testing.")
         st.download_button(
-            "Download Benco demo purchase history",
+            "Benco demo purchase history (CSV)",
             data=BENCO_DEMO_PATH.read_bytes(),
             file_name=BENCO_DEMO_PATH.name,
             mime="text/csv",
         )
         st.download_button(
-            "Download Henry Schein demo purchase history",
+            "Henry Schein demo purchase history (CSV)",
             data=HENRY_SCHEIN_DEMO_PATH.read_bytes(),
             file_name=HENRY_SCHEIN_DEMO_PATH.name,
             mime="text/csv",
         )
         st.download_button(
-            "Download demo SourceClub catalog",
+            "Demo SourceClub catalog (CSV)",
             data=SAMPLE_CATALOG_PATH.read_bytes(),
             file_name=SAMPLE_CATALOG_PATH.name,
             mime="text/csv",
@@ -231,14 +292,33 @@ summary = summarize_results(results)
 coverage = summarize_coverage(results)
 
 st.subheader("3. Summary")
-metric_columns = st.columns(7)
+metric_columns = st.columns(4)
 metric_columns[0].metric("Total old spend analyzed", money(summary["total_old_spend_analyzed"]))
-metric_columns[1].metric("Confirmed savings", money(summary["confirmed_savings"]))
-metric_columns[2].metric("Potential review savings", money(summary["potential_review_savings"]))
+metric_columns[1].metric(
+    "Confirmed savings",
+    money(summary["confirmed_savings"]),
+    help="High-confidence matches that can be counted conservatively.",
+)
+metric_columns[2].metric(
+    "Potential/review savings",
+    money(summary["potential_review_savings"]),
+    help="Possible savings from substitute, alternative, or UOM-review rows that need human confirmation.",
+)
 metric_columns[3].metric("Confirmed savings %", pct(summary["confirmed_savings_percent"]))
-metric_columns[4].metric("Rows auto-confirmed", f"{summary['rows_auto_confirmed']:,}")
-metric_columns[5].metric("Rows needing review", f"{summary['rows_needing_review']:,}")
-metric_columns[6].metric("No match / higher price", f"{summary['no_match_higher_price_rows']:,}")
+
+metric_columns = st.columns(4)
+metric_columns[0].metric("Rows auto-confirmed", f"{summary['rows_auto_confirmed']:,}")
+metric_columns[1].metric("Rows needing review", f"{summary['rows_needing_review']:,}")
+metric_columns[2].metric(
+    "No match / higher price",
+    f"{summary['no_match_higher_price_rows']:,}",
+    help="Rows excluded from confirmed savings because no reliable match was found or SourceClub was not cheaper.",
+)
+metric_columns[3].metric(
+    "Catalog coverage",
+    pct(coverage["catalog_coverage_percent"]),
+    help="Percent of rows where the current demo catalog found at least one possible match.",
+)
 
 st.caption(f"Matched spend: {money(summary['matched_spend'])}")
 
@@ -292,10 +372,28 @@ for status in status_order:
 if chips:
     st.markdown("".join(chips), unsafe_allow_html=True)
 
+legend_items = [
+    ("AUTO_CONFIRMED", "high-confidence match included in confirmed savings"),
+    ("REVIEW_ALTERNATIVE", "possible alternative; review before counting"),
+    ("REVIEW_SUBSTITUTE", "possible substitute; review before counting"),
+    ("UOM_REVIEW", "pack size/unit differs; needs apples-to-apples check"),
+    ("HIGHER_PRICE", "matched but not cheaper"),
+    ("NO_MATCH", "no reliable catalog match found"),
+]
+legend_markup = "".join(
+    f"<span class='status-chip' style='background:{status_colors.get(status, '#E7EAF0')};'>"
+    f"{status}</span> <span style='margin-right:14px;color:#52616B;font-size:0.88rem;'>{description}</span>"
+    for status, description in legend_items
+)
+st.markdown(f"<div class='status-legend'>{legend_markup}</div>", unsafe_allow_html=True)
+
 tables = split_result_tables(results)
 workbook_metadata = {
-    "demo file used": purchase_source,
-    "catalog used": catalog_source,
+    "Demo mode": demo_mode,
+    "Source file name": purchase_source,
+    "Catalog source": catalog_source,
+    "Generated timestamp": datetime.now().isoformat(timespec="seconds"),
+    "Synthetic data warning": "Synthetic demo data only. Not real customer, PHI, proprietary supplier, or SourceClub pricing data.",
 }
 workbook = make_excel_workbook(results, summary, coverage=coverage, metadata=workbook_metadata)
 
@@ -448,3 +546,14 @@ with tabs[4]:
         key="tab_download_workbook",
     )
     st.write("Workbook sheets: Summary, Savings Analysis, Review Queue, No Match Higher Price, Match Library Updates.")
+
+with st.expander("Assumptions and production next steps", expanded=False):
+    st.markdown(
+        """
+        - Demo uses synthetic data only.
+        - Built-in catalog is a small synthetic stand-in for SourceClub's real secured catalog.
+        - Real deployment should connect to a secured pricing catalog and persistent match library.
+        - UOM/pack-size normalization should be expanded with real supplier rules.
+        - Human review remains necessary for alternatives, substitutes, chargebacks, and clinically sensitive items.
+        """
+    )

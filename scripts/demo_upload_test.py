@@ -32,7 +32,11 @@ def analyze_frame(raw_purchase: pd.DataFrame, label: str) -> Dict[str, object]:
         results,
         summary,
         coverage=coverage,
-        metadata={"demo file used": label, "catalog used": "sourceclub_catalog_sample.csv"},
+        metadata={
+            "Demo mode": label,
+            "Source file name": label,
+            "Catalog source": "sourceclub_catalog_sample.csv",
+        },
     )
     return {
         "label": label,
