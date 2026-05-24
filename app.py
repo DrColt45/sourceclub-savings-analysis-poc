@@ -18,13 +18,22 @@ from core.normalization import (
     normalize_catalog,
     normalize_purchase_history,
 )
-from core.reporting import make_excel_workbook, split_result_tables, summarize_coverage, summarize_results
+from core.reporting import coverage_label, make_excel_workbook, split_result_tables, summarize_coverage, summarize_results
 
 
 APP_DIR = Path(__file__).parent
 DATA_DIR = APP_DIR / "data"
+DEMO_UPLOAD_DIR = DATA_DIR / "demo_uploads"
 SAMPLE_PURCHASE_PATH = DATA_DIR / "sample_purchase_history.csv"
 SAMPLE_CATALOG_PATH = DATA_DIR / "sourceclub_catalog_sample.csv"
+BENCO_DEMO_PATH = DEMO_UPLOAD_DIR / "Benco_Family_Dentistry_Purchase_Analysis.csv"
+HENRY_SCHEIN_DEMO_PATH = DEMO_UPLOAD_DIR / "HenrySchein_Smile_Center_Items_Purchased.csv"
+
+DEMO_PURCHASE_FILES = {
+    "Built-in Generic Demo": SAMPLE_PURCHASE_PATH,
+    "Benco Family Dentistry Demo": BENCO_DEMO_PATH,
+    "Henry Schein Smile Center Demo": HENRY_SCHEIN_DEMO_PATH,
+}
 
 
 st.set_page_config(page_title="SourceClub Savings Analysis POC", layout="wide")
@@ -66,13 +75,17 @@ st.caption(
     "review uncertain items, and export a savings-ready workbook."
 )
 st.info(
-    "This public POC uses synthetic demo data. For best demonstration results, leave the sample purchase "
-    "history and built-in sample catalog enabled, then click Run Savings Analysis."
+    "This public POC uses synthetic demo data. For the strongest demo, choose Benco Family Dentistry Demo "
+    "or Henry Schein Smile Center Demo, keep the built-in catalog enabled, and click Run Savings Analysis."
+)
+st.caption(
+    "Uploaded real-world files may show low coverage unless paired with a matching SourceClub catalog. "
+    "This is intentional; the app should not invent savings when the catalog does not contain comparable products."
 )
 
 workflow_columns = st.columns(4)
 workflow_steps = [
-    ("1", "Upload purchase history"),
+    ("1", "Select or upload purchase history"),
     ("2", "Match against catalog"),
     ("3", "Review exceptions"),
     ("4", "Export savings workbook"),
@@ -82,9 +95,41 @@ for column, (number, label) in zip(workflow_columns, workflow_steps):
         st.markdown(f"**{number}. {label}**")
 
 with st.sidebar:
-    st.header("Inputs")
-    purchase_upload = st.file_uploader("Upload purchase history", type=["csv", "xlsx", "xls"])
-    use_sample_purchase = st.checkbox("Use sample purchase history", value=purchase_upload is None)
+    st.header("Demo Mode")
+    demo_mode = st.radio(
+        "Choose purchase history",
+        [
+            "Built-in Generic Demo",
+            "Benco Family Dentistry Demo",
+            "Henry Schein Smile Center Demo",
+            "Upload My Own File",
+        ],
+        index=0,
+    )
+
+    purchase_upload = None
+    if demo_mode == "Upload My Own File":
+        purchase_upload = st.file_uploader("Upload purchase history", type=["csv", "xlsx", "xls"])
+
+    with st.expander("Download demo files", expanded=False):
+        st.download_button(
+            "Download Benco demo purchase history",
+            data=BENCO_DEMO_PATH.read_bytes(),
+            file_name=BENCO_DEMO_PATH.name,
+            mime="text/csv",
+        )
+        st.download_button(
+            "Download Henry Schein demo purchase history",
+            data=HENRY_SCHEIN_DEMO_PATH.read_bytes(),
+            file_name=HENRY_SCHEIN_DEMO_PATH.name,
+            mime="text/csv",
+        )
+        st.download_button(
+            "Download demo SourceClub catalog",
+            data=SAMPLE_CATALOG_PATH.read_bytes(),
+            file_name=SAMPLE_CATALOG_PATH.name,
+            mime="text/csv",
+        )
 
     st.divider()
     use_builtin_catalog = st.checkbox("Use built-in sample catalog", value=True)
@@ -102,9 +147,10 @@ try:
     if purchase_upload is not None:
         raw_purchase = read_uploaded_table(purchase_upload)
         purchase_source = purchase_upload.name
-    elif use_sample_purchase:
-        raw_purchase = read_local_table(SAMPLE_PURCHASE_PATH)
-        purchase_source = SAMPLE_PURCHASE_PATH.name
+    elif demo_mode in DEMO_PURCHASE_FILES:
+        selected_demo_path = DEMO_PURCHASE_FILES[demo_mode]
+        raw_purchase = read_local_table(selected_demo_path)
+        purchase_source = selected_demo_path.name
     else:
         raw_purchase = None
         purchase_source = ""
@@ -124,7 +170,7 @@ except Exception as exc:
 
 
 if raw_purchase is None:
-    st.info("Upload a purchase-history CSV/XLSX or enable the sample purchase history.")
+    st.info("Upload a purchase-history CSV/XLSX or choose one of the built-in demo files.")
     st.stop()
 
 if raw_catalog is None:
@@ -204,12 +250,16 @@ coverage_columns[2].metric("Rows auto-confirmed", f"{coverage['rows_auto_confirm
 coverage_columns[3].metric("Rows needing review", f"{coverage['rows_needing_review']:,}")
 coverage_columns[4].metric("No match / higher price", f"{coverage['rows_no_match_higher_price']:,}")
 coverage_columns[5].metric("Catalog coverage", pct(coverage["catalog_coverage_percent"]))
+label = coverage_label(float(coverage["catalog_coverage_percent"]))
+st.caption(f"Coverage label: **{label}**")
 
-if coverage["catalog_coverage_percent"] < 0.65:
+if coverage["catalog_coverage_percent"] < 0.30:
     st.warning(
         "Low catalog coverage: many uploaded purchase-history items do not exist in the current demo catalog. "
-        "Upload a matching SourceClub catalog or use the built-in demo files to see the full workflow."
+        "Upload a matching SourceClub catalog or choose one of the built-in demo files to see the full workflow."
     )
+elif coverage["catalog_coverage_percent"] < 0.70:
+    st.info("Partial catalog coverage: some uploaded items matched the demo catalog, while others need a broader catalog.")
 
 status_counts = results["match_status"].value_counts().to_dict()
 status_order = [
@@ -218,6 +268,7 @@ status_order = [
     "REVIEW_ALTERNATIVE",
     "UOM_REVIEW",
     "HIGHER_PRICE",
+    "NO_SAVINGS",
     "NO_MATCH",
 ]
 status_colors = {
@@ -226,6 +277,7 @@ status_colors = {
     "REVIEW_ALTERNATIVE": "#FFE2C7",
     "UOM_REVIEW": "#DCEBFF",
     "HIGHER_PRICE": "#FAD7D7",
+    "NO_SAVINGS": "#F1DADA",
     "NO_MATCH": "#E7EAF0",
 }
 chips = []
@@ -241,7 +293,11 @@ if chips:
     st.markdown("".join(chips), unsafe_allow_html=True)
 
 tables = split_result_tables(results)
-workbook = make_excel_workbook(results, summary)
+workbook_metadata = {
+    "demo file used": purchase_source,
+    "catalog used": catalog_source,
+}
+workbook = make_excel_workbook(results, summary, coverage=coverage, metadata=workbook_metadata)
 
 quick_export_columns = st.columns([1, 3])
 with quick_export_columns[0]:
@@ -335,6 +391,7 @@ with tabs[3]:
         "REVIEW_ALTERNATIVE",
         "UOM_REVIEW",
         "HIGHER_PRICE",
+        "NO_SAVINGS",
         "NO_MATCH",
     }
     prompt_rows = results[results["match_status"].isin(prompt_statuses)].copy()

@@ -29,7 +29,12 @@ def main() -> None:
     results = analyze_savings(normalized_purchase, normalized_catalog, AnalysisSettings())
     summary = summarize_results(results)
     coverage = summarize_coverage(results)
-    workbook = make_excel_workbook(results, summary)
+    workbook = make_excel_workbook(
+        results,
+        summary,
+        coverage=coverage,
+        metadata={"demo file used": "sample_purchase_history.csv", "catalog used": "sourceclub_catalog_sample.csv"},
+    )
 
     output_path = APP_DIR / "scripts" / "smoke_output.xlsx"
     output_path.write_bytes(workbook)
@@ -42,7 +47,7 @@ def main() -> None:
     assert results["match_status"].isin(["REVIEW_SUBSTITUTE", "REVIEW_ALTERNATIVE", "UOM_REVIEW"]).any()
     assert results["match_status"].eq("NO_MATCH").any()
     assert results["match_status"].eq("HIGHER_PRICE").any()
-    assert coverage["catalog_coverage_percent"] > 0
+    assert coverage["catalog_coverage_percent"] >= 0.70
     assert output_path.exists() and output_path.stat().st_size > 0
 
     print("Smoke test passed")

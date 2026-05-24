@@ -5,7 +5,7 @@ import math
 import re
 from dataclasses import dataclass
 from difflib import SequenceMatcher
-from typing import Dict, Iterable, List, Tuple
+from typing import Dict, List, Tuple
 
 import pandas as pd
 
@@ -70,6 +70,36 @@ def normalize_uom(value: object) -> str:
         if token in UOM_EQUIVALENTS:
             return UOM_EQUIVALENTS[token]
     return text.split()[0] if text else ""
+
+
+def _related_manufacturer(left: object, right: object) -> bool:
+    left_text = normalize_text(left)
+    right_text = normalize_text(right)
+    if not left_text or not right_text:
+        return False
+    return left_text == right_text or left_text in right_text or right_text in left_text
+
+
+def _review_hint(candidate: pd.Series) -> bool:
+    text = normalize_text(
+        " ".join(
+            [
+                str(candidate.get("best_supplier_product_name", "")),
+                str(candidate.get("manufacturer", "")),
+                str(candidate.get("notes", "")),
+            ]
+        )
+    )
+    review_terms = [
+        "alternative",
+        "house brand",
+        "house",
+        "comparable",
+        "component",
+        "review",
+        "substitute",
+    ]
+    return any(term in text for term in review_terms)
 
 
 def infer_pack_qty(*values: object) -> float | None:
@@ -185,14 +215,23 @@ def _top_candidates(purchase: pd.Series, catalog: pd.DataFrame, limit: int = 3) 
         if purchase_mfg_sku and candidate_mfg_sku and purchase_mfg_sku == candidate_mfg_sku:
             score = 100.0
             notes = ["Exact manufacturer item number match"] + [n for n in notes if "Exact manufacturer" not in n]
+            exact_manufacturer_match = True
+            exact_supplier_sku_match = False
         elif purchase_dist_sku and candidate_supplier_sku and purchase_dist_sku == candidate_supplier_sku:
             score = max(score, 98.0)
             notes = ["Exact supplier SKU/cross-reference match"] + notes
+            exact_manufacturer_match = False
+            exact_supplier_sku_match = True
+        else:
+            exact_manufacturer_match = False
+            exact_supplier_sku_match = False
 
         scored.append(
             {
                 "catalog_index": idx,
                 "score": round(score, 1),
+                "exact_manufacturer_match": exact_manufacturer_match,
+                "exact_supplier_sku_match": exact_supplier_sku_match,
                 "uom_issue": uom_issue,
                 "uom_note": uom_note,
                 "purchase_pack_qty": purchase_pack,
@@ -200,7 +239,15 @@ def _top_candidates(purchase: pd.Series, catalog: pd.DataFrame, limit: int = 3) 
             }
         )
 
-    return sorted(scored, key=lambda item: item["score"], reverse=True)[:limit]
+    return sorted(
+        scored,
+        key=lambda item: (
+            bool(item["exact_manufacturer_match"]),
+            bool(item["exact_supplier_sku_match"]),
+            item["score"],
+        ),
+        reverse=True,
+    )[:limit]
 
 
 def _normalized_costs(
@@ -319,13 +366,25 @@ def analyze_savings(purchase: pd.DataFrame, catalog: pd.DataFrame, settings: Ana
         savings = old_spend - new_spend
         savings_pct = savings / old_spend if old_spend else 0
 
+        exact_identifier_match = bool(best.get("exact_manufacturer_match") or best.get("exact_supplier_sku_match"))
+        manufacturer_mismatch = (
+            bool(normalize_text(purchase_row.get("manufacturer")))
+            and bool(normalize_text(candidate.get("manufacturer")))
+            and not _related_manufacturer(purchase_row.get("manufacturer"), candidate.get("manufacturer"))
+        )
+        review_hint = _review_hint(candidate)
+        review_required = not exact_identifier_match and (manufacturer_mismatch or review_hint)
+
         if sourceclub_cost > current_cost:
             status = "HIGHER_PRICE"
+            match_type = "identical" if best["score"] >= settings.auto_confirm_threshold else "substitute"
+        elif savings <= 0:
+            status = "NO_SAVINGS"
             match_type = "identical" if best["score"] >= settings.auto_confirm_threshold else "substitute"
         elif best["uom_issue"]:
             status = "UOM_REVIEW"
             match_type = "identical" if best["score"] >= settings.auto_confirm_threshold else "substitute"
-        elif best["score"] >= settings.auto_confirm_threshold:
+        elif best["score"] >= settings.auto_confirm_threshold and not review_required:
             status = "AUTO_CONFIRMED"
             match_type = "identical"
         elif best["score"] >= 80:

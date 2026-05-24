@@ -53,11 +53,12 @@ Streamlit will install packages from `requirements.txt`, run `app.py`, and provi
 After deployment:
 
 1. Open the public Streamlit URL.
-2. Confirm the sample purchase history loads.
-3. Click **Run Savings Analysis**.
-4. Confirm the summary metrics and tabs appear.
-5. Open the **Export** tab.
-6. Download `SourceClub_Savings_Analysis_Output.xlsx`.
+2. Choose `Benco Family Dentistry Demo` or `Henry Schein Smile Center Demo`.
+3. Confirm the built-in demo SourceClub catalog is enabled.
+4. Click **Run Savings Analysis**.
+5. Confirm the summary metrics, catalog coverage diagnostic, review queue, and no-match/higher-price tab appear.
+6. Open the **Export** tab or use the summary download button.
+7. Download `SourceClub_Savings_Analysis_Output.xlsx`.
 
 ## 5. Safety Notes
 

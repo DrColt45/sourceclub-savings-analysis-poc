@@ -4,15 +4,24 @@ This is a Streamlit prototype for SourceClub Assignment 1: Savings Analysis Auto
 
 The app lets a user upload a supplier purchase-analysis CSV/XLSX, maps the input columns into a standard SourceClub schema, compares the rows against a built-in demo SourceClub catalog, flags uncertain matches for review, and exports a sales-ready Excel workbook.
 
-## Demo Mode
+## Demo Modes
 
-Demo Mode is designed to show the intended workflow end to end. For the clearest demonstration, leave the sample purchase history and built-in sample catalog enabled, then click **Run Savings Analysis**.
+Demo Mode is designed to show the intended workflow end to end. The app includes three synthetic purchase-history options:
 
-Uploaded files may show low savings or many no-match rows if their items do not overlap with the synthetic demo catalog. In that case, the app shows a catalog coverage warning so the result reads as limited demo coverage rather than a system failure.
+- `Built-in Generic Demo`
+- `Benco Family Dentistry Demo`
+- `Henry Schein Smile Center Demo`
+
+For the clearest assignment demonstration, choose `Benco Family Dentistry Demo` or `Henry Schein Smile Center Demo`, keep the built-in SourceClub demo catalog enabled, then click **Run Savings Analysis**.
+
+The app also includes download buttons for the Benco demo purchase history, Henry Schein demo purchase history, and demo SourceClub catalog. These files are useful for showing the upload workflow without using any real customer or supplier data.
+
+Uploaded real-world files may show low savings or many no-match rows if their items do not overlap with the synthetic demo catalog. In that case, the app shows a catalog coverage warning so the result reads as limited demo coverage rather than a system failure. This is intentional: the prototype is conservative and should not invent savings when the catalog does not contain comparable products.
 
 ## What The App Does
 
 - Uploads supplier purchase-history files.
+- Provides demo-mode selection for generic, Benco-style, and Henry-Schein-style purchase histories.
 - Uses `data/sourceclub_catalog_sample.csv` as the built-in synthetic demo catalog.
 - Optionally accepts a replacement catalog upload for testing.
 - Auto-detects purchase-history columns and lets the user edit the mapping.
@@ -66,7 +75,13 @@ See `DEPLOYMENT.md` for the full step-by-step guide.
 - `core/reporting.py` - summary metrics and Excel workbook export.
 - `data/sourceclub_catalog_sample.csv` - synthetic demo catalog.
 - `data/sample_purchase_history.csv` - synthetic demo purchase history.
+- `data/demo_uploads/Benco_Family_Dentistry_Purchase_Analysis.csv` - synthetic Benco-style demo upload.
+- `data/demo_uploads/HenrySchein_Smile_Center_Items_Purchased.csv` - synthetic Henry-Schein-style demo upload.
+- `data/demo_uploads/*.xlsx` - Excel versions of the synthetic demo uploads.
 - `scripts/smoke_test.py` - smoke test that imports the core logic and generates a sample workbook locally.
+- `scripts/demo_upload_test.py` - demo coverage test for all included demo files plus a non-overlap guardrail.
+- `reports/QA_RESULTS.md` - QA commands and demo metrics.
+- `reports/DEMO_RESULTS_SUMMARY.md` - scenario-by-scenario demo results table.
 - `DEPLOYMENT.md` - deployment checklist for GitHub and Streamlit Community Cloud.
 
 ## Sample Data Statement
@@ -91,3 +106,4 @@ All included CSV data is synthetic demo data. It does not contain real dental-of
 - Expand pack/UOM parsing and supplier SKU cross-reference tables.
 - Add reviewer approval workflow and match training.
 - Connect to a secured, versioned SourceClub catalog source.
+- Add AI-assisted manufacturer SKU lookup and product reasoning for ambiguous matches, with reviewer approval before savings are confirmed.
