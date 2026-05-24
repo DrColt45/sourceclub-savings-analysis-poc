@@ -53,6 +53,13 @@ def pct(value: float) -> str:
     return f"{value:.1%}"
 
 
+def compact_label(value: object, max_length: int = 72) -> str:
+    text = str(value or "")
+    if len(text) <= max_length:
+        return text
+    return f"{text[: max_length - 3]}..."
+
+
 st.title("SourceClub Savings Analysis POC")
 
 with st.sidebar:
@@ -170,6 +177,20 @@ metric_columns[6].metric("No match / higher price", f"{summary['no_match_higher_
 st.caption(f"Matched spend: {money(summary['matched_spend'])}")
 
 tables = split_result_tables(results)
+workbook = make_excel_workbook(results, summary)
+
+quick_export_columns = st.columns([1, 3])
+with quick_export_columns[0]:
+    st.download_button(
+        "Download Savings Workbook",
+        data=workbook,
+        file_name="SourceClub_Savings_Analysis_Output.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        type="primary",
+        key="summary_download_workbook",
+    )
+with quick_export_columns[1]:
+    st.caption("The same export is also available in the Export tab.")
 
 display_columns = [
     "customer_product_name",
@@ -245,26 +266,64 @@ with tabs[2]:
         st.dataframe(no_match[[column for column in display_columns if column in no_match.columns]], use_container_width=True)
 
 with tabs[3]:
-    prompt_rows = results[
-        [
+    prompt_statuses = {
+        "REVIEW_SUBSTITUTE",
+        "REVIEW_ALTERNATIVE",
+        "UOM_REVIEW",
+        "HIGHER_PRICE",
+        "NO_MATCH",
+    }
+    prompt_rows = results[results["match_status"].isin(prompt_statuses)].copy()
+
+    if prompt_rows.empty:
+        st.success("No review prompts are needed for this analysis.")
+    else:
+        prompt_rows = prompt_rows.reset_index(drop=True)
+        prompt_rows.insert(0, "review_row", prompt_rows.index + 1)
+
+        prompt_table_columns = [
+            "review_row",
             "customer_product_name",
             "match_status",
             "similarity_score",
-            "top_candidates",
-            "ai_review_prompt",
+            "best_supplier_product_name",
+            "estimated_savings",
+            "match_notes",
         ]
-    ].copy()
-    st.dataframe(prompt_rows, use_container_width=True)
-    selected_prompt = st.selectbox("Open AI-review prompt for row", options=list(prompt_rows.index), format_func=lambda idx: prompt_rows.loc[idx, "customer_product_name"])
-    st.text_area("AI Review Prompt", value=prompt_rows.loc[selected_prompt, "ai_review_prompt"], height=320)
+        st.dataframe(
+            prompt_rows[[column for column in prompt_table_columns if column in prompt_rows.columns]],
+            use_container_width=True,
+            hide_index=True,
+        )
+
+        radio_options = list(prompt_rows.index)
+        selected_prompt = st.radio(
+            "Select review row",
+            options=radio_options,
+            format_func=lambda idx: (
+                f"Row {prompt_rows.loc[idx, 'review_row']}: "
+                f"{compact_label(prompt_rows.loc[idx, 'customer_product_name'])}"
+            ),
+            key="ai_prompt_review_row",
+        )
+
+        selected_row = prompt_rows.loc[selected_prompt]
+        st.text_area(
+            "AI Review Prompt",
+            value=selected_row["ai_review_prompt"],
+            height=300,
+            key=f"ai_review_prompt_text_{selected_row['review_row']}",
+        )
+        with st.expander("Top candidate details", expanded=False):
+            st.code(selected_row["top_candidates"], language="json")
 
 with tabs[4]:
-    workbook = make_excel_workbook(results, summary)
     st.download_button(
         "Download Savings Workbook",
         data=workbook,
         file_name="SourceClub_Savings_Analysis_Output.xlsx",
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         type="primary",
+        key="tab_download_workbook",
     )
     st.write("Workbook sheets: Summary, Savings Analysis, Review Queue, No Match Higher Price, Match Library Updates.")
